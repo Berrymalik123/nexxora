@@ -1,0 +1,23 @@
+NEXXORA V5 — Shorts Social Upgrade
+
+1. Extract this ZIP.
+2. Open a terminal in the folder.
+3. Install dependencies: pip install -r requirements.txt
+4. Run: python manage.py migrate
+5. Run: python manage.py runserver 0.0.0.0:8000
+6. Desktop: http://127.0.0.1:8000/
+7. Phone on same Wi-Fi: http://YOUR-PC-LAN-IP:8000/
+
+IMPORTANT FEATURES
+- YouTube Shorts-style full-screen vertical Reels feed with scroll snap and touch swipe.
+- AJAX like/unlike, save/unsave, comment, share — no page reload on Videos/Shorts.
+- View counting for posts, videos and reels.
+- Creator-only per-content Analysis button with live totals for views/likes/comments/shares/saves.
+- 2-step login verification by one-time email code. In DEBUG mode the development code is shown on the verification page if email is not configured.
+- One active device/session per account. A new login invalidates the previous device. Login sessions/device cookie are remembered for 60 days.
+- Stories expire after 24 hours and support media/text, seen state, progress and next/previous navigation.
+- Home feed uses infinite AJAX pagination and lazy video playback.
+- PWA manifest + service worker.
+
+EMAIL
+For production email OTP, configure Django EMAIL_* settings. DEBUG mode exposes the generated OTP on the verification screen for local testing.

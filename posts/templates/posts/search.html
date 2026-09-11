@@ -1,0 +1,26 @@
+{% load static %}
+<!doctype html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Search · Nexxora</title>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <link rel="stylesheet" href="{% static 'css/social-pages.css' %}">
+    </head>
+
+    <body>
+        <main class="app-shell">
+            <div class="section-title social-page-title">
+                <div><span class="eyebrow">DISCOVER</span><h1>Search</h1></div><a class="ghost" href="{% url 'home' %}">Back to feed</a>
+            </div>
+            <form class="search card social-search" method="get"><span aria-hidden="true">⌕</span><input name="q" value="{{ query }}"
+                    placeholder="Search people, posts or hashtags" autofocus><button type="submit" aria-label="Search">Search</button></form>{% if query %}<section class="search-results">
+                <h2>People</h2><div class="result-list">{% for u in users %}<a class="card quick result-item"
+                    href="{% url 'profile' u.username %}"><span class="avatar small">{{ u.username|first|upper }}</span><span><b>@{{ u.username }}</b><small>{{ u.first_name }} {{ u.last_name }}</small></span><span class="result-arrow">→</span></a>{% empty %}<p class="muted">No users found.</p>{% endfor %}</div><h2>Hashtags</h2><div class="result-list">{% for t in hashtags %}<div class="card result-item"><span class="hashtag-mark">#</span><b>{{ t.name }}</b></div>{% empty %}<p class="muted">No hashtags found.</p>{% endfor %}</div><h2>Posts</h2>{% for p in posts %}<article class="card search-post"><b>@{{ p.author.username }}</b><p>{{ p.content|truncatechars:180 }}</p></article>{% empty %}<p class="muted">No posts found.</p>{% endfor %}<h2>Reels</h2><div class="result-list">{% for r in reels %}<a class="card quick result-item" href="{% url 'reels' %}"><span class="hashtag-mark">▶</span><span><b>@{{ r.author.username }}</b><small>{{ r.caption|truncatechars:100 }}</small></span><span class="result-arrow">→</span></a>{% empty %}<p class="muted">No reels found.</p>{% endfor %}</div>
+            </section>{% endif %}
+        </main>
+    </body>
+
+</html>

@@ -1,0 +1,56 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Create Account · Nexxora</title>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    </head>
+
+    <body>
+        <main class="auth-page register-page">
+            <section class="auth-card glass register-card">
+                <div class="auth-brand-mark">N</div><span class="eyebrow">JOIN NEXXORA</span>
+                <h1>Create your account</h1>
+                <p class="auth-intro muted">Build your profile, share moments, and find your people.</p>
+                {% for message in messages %}<div class="flash">{{ message }}</div>
+                {% endfor %}{% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>
+                {% endif %}<form method="post" class="auth-form register-form">{% csrf_token %}{% for field in form %}
+                    <div class="auth-field">{{ field.label_tag }}{{ field }}{% if field.help_text %}<small
+                            class="field-help">{{ field.help_text|safe }}</small>{% endif %}{% for error in field.errors %}<small
+                            class="field-error">{{ error }}</small>{% endfor %}</div>{% endfor %}<button
+                        class="primary full auth-submit" type="submit">Create account</button></form>
+                <p class="auth-switch muted">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+            </section>
+            <p class="auth-tagline">Your next chapter starts here.</p>
+        </main>
+    </body>
+
+</html>
+<!doctype html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Create Account</title>{% load static %}
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    </head>
+
+    <body>
+        <main class="auth-page">
+            <div class="auth-card card">
+                <div class="brand center">Nexxora</div>
+                <h1 class="center">Create Account</h1>
+                <p class="muted center">Join the community today.</p>{% for message in messages %}<div class="flash">
+                    {{ message }}</div>{% endfor %}<form method="post">{% csrf_token %}{{ form.as_p }}<button
+                        class="primary full">Register</button></form>
+                <p class="center muted">Already have an account? <a class="back" href="{% url 'login' %}">Login</a></p>
+            </div>
+        </main>
+    </body>
+
+</html>

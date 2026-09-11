@@ -1,0 +1,21 @@
+.create-reel-page{min-height:100vh}
+.create-reel-page .create-top{max-width:1120px;margin:0 auto;padding-inline:24px}
+.create-layout{width:min(1120px,calc(100% - 32px));grid-template-columns:minmax(0,1fr) minmax(280px,390px);gap:28px;align-items:start}
+.reel-composer{padding:clamp(22px,4vw,42px)}
+.composer-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.composer-heading h1{margin:8px 0 0;font-size:clamp(28px,5vw,42px);line-height:1.05}
+.composer-step{color:var(--muted);font-size:12px;padding:8px 10px;border:1px solid var(--line);border-radius:999px}
+.reel-composer>.muted{margin:16px 0 28px;line-height:1.5}
+.reel-composer .field{margin-bottom:18px}
+.reel-composer .field label,.cover-upload>span{display:block;margin-bottom:8px;font-weight:700;font-size:13px}
+.reel-composer textarea,.reel-composer input[type=text]{width:100%;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.06);color:var(--text);padding:13px 14px;outline:none;transition:border-color .2s ease,background .2s ease}
+.reel-composer textarea{min-height:112px;resize:vertical}
+.reel-composer textarea:focus,.reel-composer input[type=text]:focus{border-color:var(--b);background:rgba(255,255,255,.09)}
+.reel-upload{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-height:190px;padding:24px;border:1px dashed rgba(255,255,255,.3);border-radius:18px;background:linear-gradient(135deg,rgba(108,92,231,.13),rgba(59,130,246,.08));text-align:center;cursor:pointer;transition:border-color .2s ease,transform .2s ease}
+.reel-upload:hover{border-color:var(--b);transform:translateY(-2px)}
+.reel-upload strong{font-size:17px}.reel-upload small,.cover-upload small{color:var(--muted);font-size:12px;line-height:1.4}.upload-icon{display:grid;place-items:center;width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,var(--a),var(--b));font-size:28px}.reel-upload input[type=file]{display:none}
+.cover-upload{display:block;margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.04);cursor:pointer}.cover-upload small{display:block;margin-bottom:10px}.cover-upload input[type=file]{width:100%;font-size:12px;color:var(--muted)}
+.publish-btn{margin-top:22px;min-height:48px;font-weight:800}
+.reel-preview{position:sticky;top:24px;padding:18px}.preview-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.preview-heading span{color:var(--muted);font-size:11px}.phone-frame{max-width:290px;margin:0 auto;padding:10px;border:1px solid rgba(255,255,255,.2);border-radius:30px;background:#05060d;box-shadow:0 22px 60px rgba(0,0,0,.45)}.phone-notch{width:82px;height:18px;margin:0 auto -4px;border-radius:0 0 12px 12px;background:#05060d;position:relative;z-index:2}.preview-screen{position:relative;display:grid;place-items:center;min-height:510px;aspect-ratio:9/16;overflow:hidden;border-radius:21px;background:radial-gradient(circle at 35% 20%,rgba(108,92,231,.45),transparent 35%),#111528;color:var(--muted);text-align:center;padding:20px;font-size:12px}.preview-screen>span:first-child{position:absolute;top:18px;left:18px;color:rgba(255,255,255,.65);font-size:10px;letter-spacing:1px}.preview-screen video{width:100%;height:100%;object-fit:cover}.preview-play{display:grid;place-items:center;width:48px;height:48px;margin:0 auto 12px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:16px}.duration-status{min-height:20px;margin-top:10px;color:var(--muted);font-size:12px}.duration-status.invalid{color:#ff8b9e}
+@media(max-width:800px){.create-layout{grid-template-columns:1fr;max-width:620px}.reel-preview{position:relative;top:auto;order:-1}.phone-frame{max-width:230px}.preview-screen{min-height:400px}.reel-composer{padding:24px}}
+@media(max-width:480px){.create-reel-page .create-top{padding-inline:16px}.create-layout{width:calc(100% - 20px);gap:16px}.reel-composer{padding:20px 16px}.composer-heading h1{font-size:29px}.reel-preview{padding:14px}.phone-frame{max-width:190px}.preview-screen{min-height:330px}.reel-upload{min-height:155px}}

@@ -1,0 +1,49 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Create Reel · Nexxora</title>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <link rel="stylesheet" href="{% static 'css/create-reel.css' %}">
+    </head>
+
+    <body>
+        <main class="create-page create-reel-page">
+            <div class="create-top"><a class="brand" href="{% url 'home' %}">Nexxora</a><a class="back"
+                    href="{% url 'home' %}">← Back to feed</a></div>
+            <div class="create-layout">
+                <section class="create-card card reel-composer"><div class="composer-heading"><div><span class="eyebrow">NEW REEL</span>
+                    <h1>Create a Reel</h1></div><span class="composer-step">1 / 1</span></div>
+                    <p class="muted">Share a vertical moment with your audience.</p>
+                    {% if form.non_field_errors %}<div class="form-error">{{ form.non_field_errors }}</div>{% endif %}
+                    <form method="post" enctype="multipart/form-data" class="modern-form" id="reel-form">
+                        {% csrf_token %}<div class="field">
+                            {{ form.caption.label_tag }}{{ form.caption }}{{ form.caption.errors }}</div><div class="field">
+                            {{ form.audio_name.label_tag }}{{ form.audio_name }}{{ form.audio_name.errors }}</div><label
+                            class="reel-upload" for="reel-video"><span class="upload-icon">＋</span><strong>Choose video</strong><small>MP4, WebM, MOV or M4V · up to 100 MB · max 5:00</small>{{ form.video }}</label>{% for error in form.video.errors %}<div
+                            class="form-error">{{ error }}</div>{% endfor %}<label class="cover-upload" for="id_thumbnail"><span>Cover image</span><small>Optional thumbnail for your reel</small>{{ form.thumbnail }}</label>{{ form.thumbnail.errors }}<div id="duration-status"
+                            class="duration-status"></div><button class="primary full publish-btn" type="submit">Publish
+                            Reel</button></form>
+                </section>
+                <aside class="reel-preview card"><div class="preview-heading"><strong>Preview</strong><span>Portrait 9:16</span></div>
+                    <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <div class="preview-screen"><span>REEL PREVIEW</span>
+                            <div id="preview-placeholder"><span class="preview-play">▶</span><span>Your video preview will appear here</span></div><video
+                                id="reel-preview-video" controls playsinline hidden></video>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </main>
+        <script>
+            const input = document.getElementById('id_video'), preview = document.getElementById('reel-preview-video'), placeholder = document.getElementById('preview-placeholder'), status = document.getElementById('duration-status'), form = document.getElementById('reel-form');
+            input.addEventListener('change', () => { const file = input.files[0]; if (!file) return; const url = URL.createObjectURL(file); preview.src = url; preview.hidden = false; placeholder.style.display = 'none'; preview.onloadedmetadata = () => { const d = preview.duration; const m = Math.floor(d / 60), s = Math.round(d % 60); status.textContent = `Duration: ${m}:${String(s).padStart(2, '0')}`; if (d > 300) { status.textContent += ' · Too long. Reels must be 5 minutes or less.'; status.classList.add('invalid'); } else { status.classList.remove('invalid'); } }; });
+            form.addEventListener('submit', e => { if (preview.duration && preview.duration > 300) { e.preventDefault(); alert('This reel is longer than 5 minutes. Please choose a shorter video.'); } });
+        </script>
+    </body>
+
+</html>

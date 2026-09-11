@@ -1,0 +1,28 @@
+Nexxora - Updated Django Social Media Project
+
+FEATURES ADDED
+- Profile picture upload/display across the app.
+- Normal posts support text + either an image OR a video.
+- Video posts support MP4, WebM, MOV and M4V.
+- Delete button for your own posts/video posts.
+- Reels: separate short-video feature.
+- Reels accept MP4, WebM, MOV and M4V.
+- Reel duration limit: 5 minutes (server validation uses ffprobe when available, plus browser-side validation).
+- Delete button for your own reels.
+- Like/Unlike works for normal posts and reels.
+- Modern responsive mobile layout with bottom navigation.
+- Mobile-friendly video/reel players.
+
+IMPORTANT
+1. Install Django and Pillow in your Python environment.
+2. For strict server-side reel duration checking, install FFmpeg so the `ffprobe` command is available on PATH.
+3. From the project directory run:
+   python manage.py migrate
+4. Start:
+   python manage.py runserver
+
+MEDIA
+Uploaded files are stored under media/posts/images/, media/posts/videos/, media/reels/ and media/avatars/.
+
+MIGRATION
+A new migration `posts/migrations/0002_post_video_reel_reellike.py` adds video posts, reels and reel likes while preserving existing posts.

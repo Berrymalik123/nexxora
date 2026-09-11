@@ -1,0 +1,31 @@
+{% load static %}
+<!doctype html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Login · Nexxora</title>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    </head>
+
+    <body>
+        <main class="auth-shell auth-page">
+            <section class="auth-card glass">
+                <div class="auth-brand-mark">N</div>
+                <span class="eyebrow">WELCOME BACK</span>
+                <h1>Sign in to Nexxora</h1>
+                <p class="muted auth-intro">Your creative space is waiting. Sign in to continue.</p>
+                {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+                <form method="post" class="auth-form">{% csrf_token %}
+                    {% for field in form %}<div class="auth-field">{{ field.label_tag }}{{ field }}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>{% endfor %}
+                    <button class="primary full auth-submit" type="submit">Continue</button>
+                </form>
+                <p class="muted auth-switch">No account? <a href="{% url 'register' %}">Create one</a></p>
+            </section>
+            <p class="auth-tagline">Create, connect, and share your world.</p>
+        </main>
+    </body>
+
+</html>

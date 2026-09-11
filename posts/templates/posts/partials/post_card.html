@@ -1,0 +1,20 @@
+{% for post in posts %}<article class="post card reveal" data-content="post" data-id="{{ post.id }}">
+    <div class="post-head"><a class="user-link" href="{% url 'profile' post.author.username %}"><span
+                class="avatar small">{{ post.author.username|first|upper }}</span><span><b>@{{ post.author.username }}</b><small>{{ post.created_at|timesince }}
+                    ago</small></span></a></div>{% if post.content %}<p class="content">{{ post.content|linebreaksbr }}
+    </p>{% endif %}<div class="media-wrap doubletap" ondblclick="quickLike(this)">{% if post.image %}<img
+            class="post-media lazy" loading="lazy" src="{{ post.image.url }}"
+            alt="Post by @{{ post.author.username }}">{% elif post.video %}<video class="post-media auto-video"
+            src="{{ post.video.url }}" muted playsinline loop preload="none"
+            aria-label="Video post by @{{ post.author.username }}"></video>{% endif %}<span class="heart-pop">♥</span>
+    </div>
+        <div class="actions" aria-label="Post actions"><button type="button" aria-label="Like post" data-action="like"
+            data-url="{% url 'like_post' post.id %}"
+            class="action-btn {% if post.id in liked_post_ids %}active{% endif %}">♥
+            <span>{{ post.likes.count }}</span></button><button aria-label="Comment on post" class="action-btn"
+            data-comment-button onclick="openComments('post',{{ post.id }})">💬 <span>{{ post.comments.count }}</span></button><button
+            type="button" aria-label="Share post" class="action-btn share-btn" data-url="{% url 'share_post' post.id %}"
+            onclick="shareItem(this,event)">↗ <span>{{ post.shares.count }}</span></button><button type="button" aria-label="Save post"
+            data-action="save" data-url="{% url 'save_post' post.id %}"
+            class="action-btn {% if post.id in saved_post_ids %}active{% endif %}">🔖</button></div>
+</article>{% endfor %}

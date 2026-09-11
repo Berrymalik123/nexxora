@@ -1,0 +1,67 @@
+{% load static %}
+<!doctype html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>@{{ profile_user.username }} · Nexxora</title>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+        <link rel="stylesheet" href="{% static 'css/logout.css' %}">
+    </head>
+
+    <body>
+        <header class="topbar glass"><a class="brand" href="{% url 'home' %}">Nexxora</a>
+                    <nav class="desktop-nav profile-desktop-nav"><a href="{% url 'home' %}">Posts</a><a
+                        href="{% url 'videos' %}">Videos</a><a href="{% url 'reels' %}">Reels</a><a
+                        href="{% url 'friends' %}">Make Friends</a><a href="{% url 'inbox' %}">Messages</a><a class="logout-link" href="{% url 'logout' %}">↪ Logout</a></nav>
+        </header>
+        <main class="app-shell">
+            <div class="profile-cover"></div>
+            <section class="profile-head">
+                <div class="profile-avatar">{% if profile.avatar %}<img src="{{ profile.avatar.url }}" alt="@{{ profile_user.username }} profile photo">{% else %}{{ profile_user.username|first|upper }}{% endif %}</div>
+                <div class="profile-info">
+                    <div class="profile-title-row">
+                        <h1>@{{ profile_user.username }}</h1>
+                        {% if user.is_authenticated and user != profile_user %}<button id="followBtn" class="primary"
+                            onclick="toggleFollow()">{% if is_following %}Following{% else %}Follow{% endif %}</button><a class="secondary profile-message-button"
+                            href="{% url 'conversation' profile_user.username %}">Message</a>{% elif user == profile_user %}<a
+                            class="ghost" href="{% url 'edit_profile' %}">Edit profile</a>{% endif %}
+                    </div>
+                    <p class="muted">{{ profile.bio|default:'Creator on Nexxora' }}</p>
+                </div>
+            </section>
+            <section class="profile-stats" aria-label="Profile statistics">
+                <div class="stat-row profile-primary-stats">
+                    <div><b>{{ stats.posts }}</b><span>Posts</span></div>
+                    <div><b>{{ profile.follower_count }}</b><span>Followers</span></div>
+                    <div><b>{{ profile.following_count }}</b><span>Following</span></div>
+                </div>
+                <div class="stat-row profile-extra-stats">
+                    <div><b>{{ stats.reels }}</b><span>Reels</span></div>
+                    <div><b>{{ stats.views }}</b><span>Views</span></div>
+                    <div><b>{{ stats.likes }}</b><span>Likes</span></div>
+                </div>
+            </section>
+            <div class="tabs profile-tabs"><button class="primary" onclick="showTab('posts',this)">Posts</button><button class="ghost"
+                    onclick="showTab('reels',this)">Reels</button></div>
+            <section id="postsTab" class="profile-grid">{% for p in posts %}{% if p.image %}<img src="{{ p.image.url }}"
+                    loading="lazy">{% elif p.video %}<video src="{{ p.video.url }}" muted></video>{% else %}<div
+                    class="card">{{ p.content|truncatechars:90 }}</div>{% endif %}{% empty %}<div class="card">No posts
+                    yet.</div>{% endfor %}</section>
+            <section id="reelsTab" class="profile-grid" style="display:none">{% for r in reels %}<video
+                    src="{{ r.video.url }}" muted playsinline></video>{% empty %}<div class="card">No reels yet.</div>
+                {% endfor %}</section>
+        </main>{% if user.is_authenticated %}<nav class="mobile-nav glass profile-mobile-nav" aria-label="Primary navigation"><a
+            href="{% url 'home' %}" aria-label="Posts"><span class="nav-icon">⌂</span><span>Posts</span></a><a
+            href="{% url 'search' %}" aria-label="Search"><span class="nav-icon">⌕</span><span>Search</span></a><a
+            href="{% url 'create_post' %}" class="create-fab" aria-label="Create post"><span>＋</span></a><a
+            href="{% url 'videos' %}" aria-label="Videos"><span class="nav-icon">▣</span><span>Videos</span></a><a
+            href="{% url 'reels' %}" aria-label="Reels"><span class="nav-icon">▶</span><span>Reels</span></a><a
+            class="active" href="{% url 'profile' profile_user.username %}" aria-label="Profile"><span class="nav-icon">●</span><span>Profile</span></a>
+        </nav>{% endif %}
+        <script>function showTab(t,button) { document.getElementById('postsTab').style.display = t === 'posts' ? 'grid' : 'none'; document.getElementById('reelsTab').style.display = t === 'reels' ? 'grid' : 'none'; document.querySelectorAll('.profile-tabs button').forEach(function(tab) { tab.classList.toggle('primary', tab === button); tab.classList.toggle('ghost', tab !== button); }); } async function toggleFollow() { const r = await fetch('{% url "toggle_follow" profile_user.username %}', { method: 'POST', headers: { 'X-CSRFToken': (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } }).then(x => x.json()); if (r.ok) { document.getElementById('followBtn').textContent = r.following ? 'Following' : 'Follow'; } }</script>
+    </body>
+
+</html>

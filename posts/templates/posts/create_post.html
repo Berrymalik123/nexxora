@@ -1,0 +1,39 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Create Post · Nexxora</title>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <link rel="stylesheet" href="{% static 'css/create-post.css' %}">
+    </head>
+
+    <body>
+        <main class="create-page create-post-page">
+            <div class="create-top"><a class="brand" href="{% url 'home' %}">Nexxora</a><a class="back"
+                    href="{% url 'home' %}">← Feed</a></div>
+            <div class="create-layout">
+                <section class="create-card card post-composer"><div class="composer-heading"><div><span class="eyebrow">SHARE A MOMENT</span>
+                    <h1>Create a Post</h1></div><span class="composer-step">NEW</span></div>
+                    <p class="muted">Add text, a photo, or a video to your feed.</p>{% if form.non_field_errors %}<div
+                        class="form-error">{{ form.non_field_errors }}</div>{% endif %}<form method="post"
+                        enctype="multipart/form-data" class="modern-form">{% csrf_token %}<div class="field">
+                            {{ form.content.label_tag }}{{ form.content }}{{ form.content.errors }}</div>
+                        <div class="upload-grid"><label class="upload-box" for="id_image"><span class="upload-icon">＋</span><strong>Photo</strong><small>JPG, PNG or WEBP</small>{{ form.image }}</label><label class="upload-box" for="id_video"><span class="upload-icon">＋</span><strong>Video</strong><small>MP4, WebM or MOV</small>{{ form.video }}</label></div>
+                        {% for error in form.image.errors %}<div class="form-error">{{ error }}</div>
+                        {% endfor %}{% for error in form.video.errors %}<div class="form-error">{{ error }}</div>
+                        {% endfor %}<button class="primary full publish-btn">Publish Post</button>
+                    </form>
+                </section>
+                <aside class="create-side card">
+                    <div class="feature-icon">✦</div>
+                    <h3>Make it yours</h3>
+                    <p class="muted">Pair your caption with a visual and keep your profile feeling personal.</p><a class="secondary full" href="{% url 'create_reel' %}">Create a Reel</a>
+                </aside>
+            </div>
+        </main>
+    </body>
+
+</html>

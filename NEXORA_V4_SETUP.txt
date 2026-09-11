@@ -1,0 +1,29 @@
+NEXXORA V4 — Mobile Social / Shorts Upgrade
+
+FEATURES
+- Instagram-style home feed with AJAX likes/saves/shares/comments and double-tap like.
+- Videos and Reels are full-screen, vertical, Shorts-style pages with scroll snap, touch swipe and autoplay/pause.
+- Views are recorded for posts, videos and reels; creator-only per-content Stats buttons show views/likes/comments/shares/saves.
+- Stories support image/video/text, 24-hour expiry, seen tracking, progress bar and next/previous viewer.
+- Profiles include cover, avatar, follower/following counts, Posts/Reels tabs, edit profile and creator statistics.
+- Notifications include follow/like/comment/share types and unread state in the model.
+- Search covers users, posts, reels and hashtags, plus JSON live-search endpoint support.
+- Messaging has conversation list, timestamps and unread/read state.
+- PWA manifest + service worker; responsive mobile/tablet/desktop layout.
+- Glassmorphism, blue/purple gradients, 3D hero, GSAP CDN hooks, scroll/reveal animations, skeleton loading and modals.
+- Report/moderation models and Django admin support.
+- Media upload size validation (100 MB); reel duration validation up to 5 minutes; optional thumbnail/audio label.
+- 2-step login verification using a 6-digit one-time code. In DEBUG the code is shown on the verification page; in production configure SMTP in settings.
+- One active device at a time. The remembered device token/session is kept for 60 days. Logging in from a new device invalidates the old session.
+
+RUN
+1. python -m pip install -r requirements.txt
+2. python manage.py migrate
+3. python manage.py createsuperuser
+4. python manage.py runserver 0.0.0.0:8000
+5. Open http://127.0.0.1:8000/ or the PC's LAN IP on the phone.
+
+IMPORTANT
+- The default email backend is console for local development, so production 2FA should be configured with a real SMTP backend.
+- For a new database, run migrations. Existing databases must also run `python manage.py migrate` to add V4 tables/fields.
+- The single-device rule is enforced server-side by DeviceSession + middleware.

@@ -1,0 +1,17 @@
+NEXXORA MOBILE UPGRADE v3
+
+1) Extract the ZIP.
+2) Open terminal in the folder containing manage.py.
+3) Windows:
+   python -m venv venv
+   venv\Scripts\activate
+   pip install -r requirements.txt
+   python manage.py migrate
+   python manage.py check
+   python manage.py runserver
+4) Phone on same Wi-Fi:
+   python manage.py runserver 0.0.0.0:8000
+   Find your PC IPv4 with ipconfig, then open http://PC-IP:8000/ on the phone.
+
+Visible upgrades: new mobile-first feed, creator hero, stories, reels browser, animated reveal/3D hover, dark mode, bottom mobile navigation, AJAX likes/comments, view tracking, analytics, PWA manifest/service worker, and creator upload flows for posts/videos/reels/stories.
+All authenticated creators can publish posts (text/photo/video), reels and stories.
