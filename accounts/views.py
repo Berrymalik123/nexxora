@@ -16,7 +16,7 @@ def _code_hash(code): return hashlib.sha256((settings.SECRET_KEY+code).encode())
 def _device_token(request): return request.COOKIES.get('nexora_device') or secrets.token_urlsafe(48)
 def _finish_login(request,user,token):
     # OneToOne DeviceSession replaces the previous active device immediately.
-    login(request,user); request.session.set_expiry(60*24*60*60)
+    login(request,user); request.session.set_expiry(60*24*60*60); request.session.save()
     with transaction.atomic():
         DeviceSession.objects.filter(device_token=token).exclude(user=user).delete()
         DeviceSession.objects.update_or_create(user=user,defaults={'device_token':token,'session_key':request.session.session_key,'expires_at':timezone.now()+timedelta(days=60)})
@@ -27,7 +27,7 @@ def login_view(request):
     if request.method=='POST' and form.is_valid():
         user=form.get_user(); code=f'{secrets.randbelow(1000000):06d}'; TwoFactorCode.objects.update_or_create(user=user,defaults={'code_hash':_code_hash(code),'expires_at':timezone.now()+timedelta(minutes=10),'attempts':0})
         request.session['pending_2fa_user']=user.pk; request.session['pending_device_token']=_device_token(request)
-        send_mail('Nexxora verification code',f'Your Nexxora verification code is {code}. It expires in 10 minutes.',getattr(settings,'DEFAULT_FROM_EMAIL','noreply@nexora.local'),[user.email] if user.email else [],fail_silently=True)
+        send_mail('Helogram verification code',f'Your Helogram verification code is {code}. It expires in 10 minutes.',getattr(settings,'DEFAULT_FROM_EMAIL','noreply@helogram.local'),[user.email] if user.email else [],fail_silently=True)
         if settings.DEBUG: request.session['dev_2fa_code']=code
         return redirect('verify_2fa')
     return render(request,'accounts/login.html',{'form':form})

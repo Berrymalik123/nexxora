@@ -41,8 +41,9 @@ class Comment(models.Model):
 
 class Reel(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reels')
+    remix_of = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True, related_name='remixes')
     caption = models.TextField(blank=True)
-    video = models.FileField(upload_to='reels/', validators=[FileExtensionValidator(allowed_extensions=VIDEO_EXTENSIONS)])
+    video = models.FileField(upload_to='reels/', blank=True, null=True, validators=[FileExtensionValidator(allowed_extensions=VIDEO_EXTENSIONS)])
     thumbnail = models.ImageField(upload_to='reels/thumbnails/', blank=True, null=True)
     audio_name = models.CharField(max_length=120, blank=True, default='Original audio')
     created_at = models.DateTimeField(auto_now_add=True)

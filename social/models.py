@@ -38,8 +38,12 @@ class ContentView(models.Model):
 class Message(models.Model):
     sender=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='sent_messages')
     recipient=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='received_messages')
+    reel=models.ForeignKey('posts.Reel',on_delete=models.CASCADE,blank=True,null=True,related_name='messages')
     text=models.TextField(max_length=2000)
     image=models.ImageField(upload_to='messages/images/',blank=True,null=True)
+    audio=models.FileField(upload_to='messages/audio/',blank=True,null=True)
+    one_time=models.BooleanField(default=False)
+    opened_at=models.DateTimeField(blank=True,null=True)
     created_at=models.DateTimeField(auto_now_add=True)
     is_read=models.BooleanField(default=False)
     class Meta: ordering=['created_at']
@@ -56,3 +60,15 @@ class TwoFactorCode(models.Model):
     code_hash=models.CharField(max_length=128)
     expires_at=models.DateTimeField()
     attempts=models.PositiveIntegerField(default=0)
+
+class CallSession(models.Model):
+    caller=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='calls_started')
+    recipient=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='calls_received')
+    kind=models.CharField(max_length=10,choices=[('voice','Voice'),('video','Video')],default='voice')
+    status=models.CharField(max_length=12,default='ringing')
+    offer=models.JSONField(default=dict,blank=True)
+    answer=models.JSONField(default=dict,blank=True)
+    caller_candidates=models.JSONField(default=list,blank=True)
+    recipient_candidates=models.JSONField(default=list,blank=True)
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)

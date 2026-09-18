@@ -1,5 +1,4 @@
 import json, os, re, secrets, subprocess, tempfile
-from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
@@ -8,11 +7,10 @@ from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import ensure_csrf_cookie
-from django.utils import timezone
 from .forms import PostForm, ReelForm
 from .models import Comment, Like, Save, Share, Post, Reel, ReelLike, ReelSave, ReelShare, ReelComment, Hashtag
 from notifications.models import Notification
-from social.models import ContentView, Story, StorySeen
+from social.models import ContentView
 User=get_user_model()
 
 def wants_json(request): return request.headers.get('x-requested-with')=='XMLHttpRequest' or request.headers.get('accept','').startswith('application/json')
@@ -35,67 +33,51 @@ def home(request):
     qs=Post.objects.filter(is_public=True).select_related('author','author__profile').prefetch_related('likes','saves','comments__user','hashtags').order_by('-created_at')
     page=Paginator(qs,8).get_page(request.GET.get('page',1)); posts=page.object_list
     reels=Reel.objects.select_related('author','author__profile').prefetch_related('likes','saves','comments')[:10]
-    stories=Story.objects.filter(expires_at__gt=timezone.now()).select_related('author','author__profile')[:30]
-    liked_posts=saved_posts=liked_reels=saved_reels=seen_stories=set()
+    liked_posts=saved_posts=liked_reels=saved_reels=set()
     if request.user.is_authenticated:
         liked_posts=set(Like.objects.filter(user=request.user,post__in=posts).values_list('post_id',flat=True))
         saved_posts=set(Save.objects.filter(user=request.user,post__in=posts).values_list('post_id',flat=True))
         liked_reels=set(ReelLike.objects.filter(user=request.user,reel__in=reels).values_list('reel_id',flat=True))
         saved_reels=set(ReelSave.objects.filter(user=request.user,reel__in=reels).values_list('reel_id',flat=True))
-        seen_stories=set(StorySeen.objects.filter(user=request.user,story__in=stories).values_list('story_id',flat=True))
-    ctx={'posts':posts,'reels':reels,'stories':stories,'liked_post_ids':liked_posts,'saved_post_ids':saved_posts,'liked_reel_ids':liked_reels,'saved_reel_ids':saved_reels,'seen_story_ids':seen_stories,'has_next':page.has_next()}
+    ctx={'posts':posts,'reels':reels,'liked_post_ids':liked_posts,'saved_post_ids':saved_posts,'liked_reel_ids':liked_reels,'saved_reel_ids':saved_reels,'has_next':page.has_next()}
     if wants_json(request): return JsonResponse({'ok':True,'html':_render_post_cards(request,posts),'has_next':page.has_next(),'page':page.number})
     return render(request,'posts/home.html',ctx)
-
-@login_required
-@ensure_csrf_cookie
-def videos(request):
-    posts=Post.objects.filter(video__isnull=False,is_public=True).select_related('author','author__profile').prefetch_related('likes','saves','comments').order_by('-created_at')
-    liked=set(Like.objects.filter(user=request.user,post__in=posts).values_list('post_id',flat=True)); saved=set(Save.objects.filter(user=request.user,post__in=posts).values_list('post_id',flat=True))
-    return render(request,'posts/videos.html',{'video_posts':posts,'liked_post_ids':liked,'saved_post_ids':saved})
 
 @login_required
 @ensure_csrf_cookie
 def reels(request):
     reels_qs=Reel.objects.select_related('author','author__profile').prefetch_related('likes','saves','comments').order_by('-created_at')
     liked=set(ReelLike.objects.filter(user=request.user,reel__in=reels_qs).values_list('reel_id',flat=True)); saved=set(ReelSave.objects.filter(user=request.user,reel__in=reels_qs).values_list('reel_id',flat=True))
-    return render(request,'posts/reels.html',{'reels':reels_qs,'liked_reel_ids':liked,'saved_reel_ids':saved})
+    friends=User.objects.filter(profile__followers=request.user).exclude(pk=request.user.pk).order_by('username')
+    return render(request,'posts/reels.html',{'reels':reels_qs,'liked_reel_ids':liked,'saved_reel_ids':saved,'share_friends':friends})
 
 @login_required
 def create_post(request):
-    form=PostForm(request.POST or None,request.FILES or None)
-    if request.method=='POST' and form.is_valid():
-        p=form.save(commit=False); p.author=request.user
-        upload=p.video or p.image
-        if upload and getattr(upload,'size',0)>100*1024*1024: form.add_error(None,'Maximum upload size is 100 MB.')
+    form = PostForm(request.POST or None, request.FILES or None)
+    if request.method == 'POST' and form.is_valid():
+        p = form.save(commit=False)
+        p.author = request.user
+        if p.image and getattr(p.image, 'size', 0) > 100 * 1024 * 1024:
+            form.add_error(None, 'Maximum upload size is 100 MB.')
         else:
-            p.save(); _sync_hashtags(p,p.content); return redirect('home')
-    return render(request,'posts/create_post.html',{'form':form})
+            p.save()
+            _sync_hashtags(p, p.content)
+            return redirect('home')
+    return render(request, 'posts/create_post.html', {'form': form})
 
 @login_required
 def create_reel(request):
-    form=ReelForm(request.POST or None,request.FILES or None)
-    if request.method=='POST' and form.is_valid():
-        r=form.save(commit=False); r.author=request.user
-        if getattr(r.video,'size',0)>100*1024*1024: form.add_error('video','Maximum reel size is 100 MB.')
+    form = ReelForm(request.POST or None, request.FILES or None)
+    if request.method == 'POST' and form.is_valid():
+        r = form.save(commit=False)
+        r.author = request.user
+        if getattr(r.thumbnail, 'size', 0) > 100 * 1024 * 1024:
+            form.add_error('thumbnail', 'Maximum cover size is 100 MB.')
         else:
-            r.save(); _sync_hashtags(r,r.caption,True); return redirect('reels')
-    return render(request,'posts/create_reel.html',{'form':form})
-
-@login_required
-def add_story(request):
-    if request.method!='POST': return JsonResponse({'ok':False,'error':'POST required'},status=405)
-    media=request.FILES.get('media'); text=(request.POST.get('text') or '').strip()
-    if not media and not text: return JsonResponse({'ok':False,'error':'Add text or media.'},status=400)
-    if media and media.size>50*1024*1024: return JsonResponse({'ok':False,'error':'Story media must be under 50 MB.'},status=400)
-    s=Story.objects.create(author=request.user,media=media,text=text,story_type='media' if media else 'text',expires_at=timezone.now()+timedelta(hours=24))
-    return ok(id=s.id)
-
-@login_required
-def seen_story(request,story_id):
-    s=get_object_or_404(Story,id=story_id)
-    StorySeen.objects.get_or_create(user=request.user,story=s)
-    return ok()
+            r.save()
+            _sync_hashtags(r, r.caption, True)
+            return redirect('reels')
+    return render(request, 'posts/create_reel.html', {'form': form})
 
 def _toggle_unique(model,user,field_name,obj):
     kwargs={'user':user,field_name:obj}; existing=model.objects.filter(**kwargs).first()
@@ -126,6 +108,18 @@ def share_post(request,post_id):
 def share_reel(request,reel_id):
     if request.method!='POST': return JsonResponse({'ok':False,'error':'POST required'},status=405)
     r=get_object_or_404(Reel,id=reel_id); ReelShare.objects.create(user=request.user,reel=r); _notify(r.author,request.user,'share',f'@{request.user.username} shared your reel.'); return ok(count=r.shares.count())
+
+@login_required
+def remix_reel(request,reel_id):
+    if request.method != 'POST': return JsonResponse({'ok':False,'error':'POST required'},status=405)
+    source=get_object_or_404(Reel,id=reel_id)
+    audio_name = source.audio_name or 'Original audio'
+    return JsonResponse({
+        'ok': True,
+        'audio_name': audio_name,
+        'message': f'Sound "{audio_name}" copied.',
+        'copied': True,
+    })
 
 @login_required
 def add_comment(request,post_id):

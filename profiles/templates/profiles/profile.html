@@ -5,17 +5,15 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1">
-        <title>@{{ profile_user.username }} · Nexxora</title>
+        <title>@{{ profile_user.username }} · Helogram</title>
         <link rel="stylesheet" href="{% static 'css/style.css' %}">
         <link rel="stylesheet" href="{% static 'css/profile.css' %}">
         <link rel="stylesheet" href="{% static 'css/logout.css' %}">
     </head>
 
     <body>
-        <header class="topbar glass"><a class="brand" href="{% url 'home' %}">Nexxora</a>
-                    <nav class="desktop-nav profile-desktop-nav"><a href="{% url 'home' %}">Posts</a><a
-                        href="{% url 'videos' %}">Videos</a><a href="{% url 'reels' %}">Reels</a><a
-                        href="{% url 'friends' %}">Make Friends</a><a href="{% url 'inbox' %}">Messages</a><a class="logout-link" href="{% url 'logout' %}">↪ Logout</a></nav>
+        <header class="topbar glass"><a class="brand" href="{% url 'home' %}">Helogram</a>
+                        <a class="profile-menu-button" href="{% url 'home' %}" aria-label="Go to home">&#9776;<span>Menu</span></a>
         </header>
         <main class="app-shell">
             <div class="profile-cover"></div>
@@ -29,7 +27,7 @@
                             href="{% url 'conversation' profile_user.username %}">Message</a>{% elif user == profile_user %}<a
                             class="ghost" href="{% url 'edit_profile' %}">Edit profile</a>{% endif %}
                     </div>
-                    <p class="muted">{{ profile.bio|default:'Creator on Nexxora' }}</p>
+                    <p class="muted">{{ profile.bio|default:'Creator on Helogram' }}</p>
                 </div>
             </section>
             <section class="profile-stats" aria-label="Profile statistics">
@@ -57,7 +55,6 @@
             href="{% url 'home' %}" aria-label="Posts"><span class="nav-icon">⌂</span><span>Posts</span></a><a
             href="{% url 'search' %}" aria-label="Search"><span class="nav-icon">⌕</span><span>Search</span></a><a
             href="{% url 'create_post' %}" class="create-fab" aria-label="Create post"><span>＋</span></a><a
-            href="{% url 'videos' %}" aria-label="Videos"><span class="nav-icon">▣</span><span>Videos</span></a><a
             href="{% url 'reels' %}" aria-label="Reels"><span class="nav-icon">▶</span><span>Reels</span></a><a
             class="active" href="{% url 'profile' profile_user.username %}" aria-label="Profile"><span class="nav-icon">●</span><span>Profile</span></a>
         </nav>{% endif %}

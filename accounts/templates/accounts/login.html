@@ -5,7 +5,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1">
-        <title>Login · Nexxora</title>
+        <title>Sign in · Helogram</title>
         <link rel="stylesheet" href="{% static 'css/style.css' %}">
         <link rel="stylesheet" href="{% static 'css/auth.css' %}">
     </head>
@@ -13,9 +13,9 @@
     <body>
         <main class="auth-shell auth-page">
             <section class="auth-card glass">
-                <div class="auth-brand-mark">N</div>
+                <a class="auth-brand" href="{% url 'home' %}"><span class="auth-brand-mark">H</span><strong>Helogram</strong></a>
                 <span class="eyebrow">WELCOME BACK</span>
-                <h1>Sign in to Nexxora</h1>
+                <h1>Sign in to Helogram</h1>
                 <p class="muted auth-intro">Your creative space is waiting. Sign in to continue.</p>
                 {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
                 <form method="post" class="auth-form">{% csrf_token %}

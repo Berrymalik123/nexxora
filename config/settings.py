@@ -261,11 +261,11 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 120 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 120 * 1024 * 1024
 
 # Mobile/PWA support
-APP_NAME = "Nexxora"
+APP_NAME = "Helogram"
 
 SESSION_COOKIE_AGE = 60 * 24 * 60 * 60
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'noreply@nexora.local'
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@helogram.local')
 FILE_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024
 DATA_UPLOAD_MAX_MEMORY_SIZE = 110 * 1024 * 1024

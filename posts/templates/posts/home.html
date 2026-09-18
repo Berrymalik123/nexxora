@@ -1,5 +1,65 @@
-{% load static %}<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#090b18"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="{% static 'manifest.json' %}"><title>Nexxora — Social</title><link rel="stylesheet" href="{% static 'css/style.css' %}"><link rel="stylesheet" href="{% static 'css/logout.css' %}"><link rel="stylesheet" href="{% static 'css/social-pages.css' %}"><script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script></head><body><header class="topbar glass"><a class="brand" href="{% url 'home' %}"><span class="brand-mark">N</span>Nexxora</a><form class="search" action="{% url 'search' %}"><span>⌕</span><input name="q" placeholder="Search Nexxora…"></form><a class="home-friends-link" href="{% url 'friends' %}">✦ <span>Friends</span></a><div class="top-actions">{% if user.is_authenticated %}<a href="{% url 'inbox' %}">💬</a><a href="{% url 'notifications' %}" class="bell">🔔<i id="notifBadge"></i></a><a class="logout-link" href="{% url 'logout' %}">↪ <span>Logout</span></a><button id="themeToggle" class="icon-btn">☾</button>{% endif %}</div></header>
-<main class="app-shell"><section class="hero glass reveal"><div><span class="eyebrow">NEXXORA • FOR YOU</span><h1>Share. Watch.<br><em>Connect.</em></h1><p>Shorts-style video, stories and a fast social feed — actions happen without page reloads.</p><div class="hero-actions">{% if user.is_authenticated %}<a class="primary" href="{% url 'create_post' %}">＋ Create post</a><a class="ghost" href="{% url 'create_reel' %}">▶ Create Short</a>{% else %}<a class="primary" href="{% url 'login' %}">Sign in</a>{% endif %}</div></div><div class="hero-3d"><div class="float-card one">⚡ NO RELOAD</div><div class="float-card two">▶ SHORTS</div><div class="phone-3d"><div class="phone-screen"><strong>FOR YOU</strong><span>♥ 2.4K</span><span>💬 182</span><span>↗ Share</span></div></div></div></section>
-<section class="stories-wrap reveal"><div class="section-title"><div><span class="eyebrow">24 HOURS</span><h2>Stories</h2></div>{% if user.is_authenticated %}<button class="ghost small" onclick="openStoryComposer()">＋ Add</button>{% endif %}</div><div class="stories" id="stories">{% for story in stories %}<button class="story {% if story.id in seen_story_ids %}seen{% endif %}" data-story-id="{{ story.id }}" data-media="{% if story.media %}{{ story.media.url }}{% endif %}" data-text="{{ story.text|escapejs }}" data-author="@{{ story.author.username }}" onclick="openStory(this)">{% if story.author.profile.avatar %}<img src="{{ story.author.profile.avatar.url }}">{% else %}<span>{{ story.author.username|first|upper }}</span>{% endif %}<b>@{{ story.author.username }}</b></button>{% empty %}<div class="muted">No active stories. Add the first one.</div>{% endfor %}</div></section>
-<section class="feed-layout"><div class="feed-main"><div class="feed-tabs glass"><b>For you</b><a href="{% url 'videos' %}">Videos</a><a href="{% url 'reels' %}">Shorts</a></div><div id="feedList">{% include 'posts/_post_cards.html' %}</div><div id="feedLoader" class="skeleton-stack"><div class="skeleton"></div><div class="skeleton"></div></div></div><aside class="side-panel"><div class="card glass"><span class="eyebrow">CREATOR STUDIO</span><h3>Your content, measured.</h3><p class="muted">Track views, likes, comments, shares and saves for every post and Short.</p><a class="primary full" href="{% url 'analytics' %}">Open dashboard</a></div><div class="card"><h3>Explore</h3><a class="quick friends-home-link" href="{% url 'friends' %}"><span class="friends-entry-icon">✦</span><span><b>Make friends</b><small>Discover people and profiles</small></span><strong>→</strong></a><a class="quick" href="{% url 'reels' %}">▶ YouTube Shorts style</a><a class="quick" href="{% url 'videos' %}">🎥 Full-screen videos</a><a class="quick" href="{% url 'search' %}">⌕ Search creators</a><a class="quick" href="{% url 'inbox' %}">💬 Friends & Messages</a></div></aside></section></main>
-{% if user.is_authenticated %}<nav class="mobile-nav glass"><a class="active" href="{% url 'home' %}">⌂<span>Home</span></a><a href="{% url 'friends' %}">✦<span>Friends</span></a><a class="create-fab" href="{% url 'create_post' %}">＋</a><a href="{% url 'reels' %}">▶<span>Shorts</span></a><a href="{% url 'profile' user.username %}">●<span>Profile</span></a></nav>{% endif %}<div id="modalRoot"></div><script>window.NEXXORA={feedPage:1};</script><script src="{% static 'js/app.js' %}?v=4"></script></body></html>
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#090b18">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="{% static 'manifest.json' %}">
+  <title>Helogram — Social</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=8">
+  <link rel="stylesheet" href="{% static 'css/logout.css' %}">
+  <link rel="stylesheet" href="{% static 'css/social-pages.css' %}">
+  <style>
+    .mobile-menu-backdrop[hidden], .mobile-menu[aria-hidden="true"] { display: none !important; }
+    .mobile-menu { position: fixed; inset: 0 0 0 auto; z-index: 90; width: min(340px, 88vw); transform: translateX(105%); transition: transform .25s ease; }
+    .mobile-menu.open { transform: translateX(0); }
+    .mobile-menu-backdrop { position: fixed; inset: 0; z-index: 80; }
+    .menu-toggle { display: none; }
+    @media (max-width: 700px) {
+      .menu-toggle { display: inline-flex; }
+      .search-section { width: calc(100% - 20px); margin: 8px auto 14px; }
+      .search-section .search { width: 100%; max-width: 100%; min-width: 0; margin: 0; box-sizing: border-box; }
+      .search-section .search input { min-width: 0; width: 100%; max-width: 100%; }
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+</head>
+<body>
+  <header class="topbar glass">
+    <a class="brand" href="{% url 'home' %}"><span class="brand-mark">H</span>Helogram</a>
+    <a class="home-friends-link" href="{% url 'friends' %}">✦ <span>Friends</span></a>
+    <div class="top-actions">
+      {% if user.is_authenticated %}
+        <a href="{% url 'notifications' %}" class="bell" aria-label="Notifications">🔔<i id="notifBadge"></i></a>
+        <button id="themeToggle" class="icon-btn" type="button" aria-label="Toggle theme">☾</button>
+      {% else %}
+        <a class="sign-in-link" href="{% url 'login' %}">Sign in</a>
+        <a class="register-link" href="{% url 'register' %}">Create account</a>
+      {% endif %}
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+  <section class="search-section" aria-label="Search Helogram">
+    <form class="search" action="{% url 'search' %}"><span aria-hidden="true">⌕</span><input name="q" placeholder="Search Helogram…"></form>
+  </section>
+  <div class="mobile-menu-backdrop" id="menuBackdrop" hidden></div>
+  <aside class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <div class="mobile-menu-head"><strong>Helogram</strong><button class="menu-close" id="menuClose" type="button" aria-label="Close menu">×</button></div>
+    <nav class="mobile-menu-links" aria-label="Mobile navigation">
+      <a href="{% url 'home' %}">⌂ <span>Home</span></a>
+      <a href="{% url 'friends' %}">✦ <span>Discover people</span></a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'inbox' %}">💬 <span>Messages</span></a>
+        <a href="{% url 'notifications' %}">🔔 <span>Notifications</span></a>
+        <a href="{% url 'logout' %}">↪ <span>Sign out</span></a>
+      {% else %}
+        <a class="mobile-menu-primary" href="{% url 'login' %}">→ <span>Sign in</span></a>
+        <a href="{% url 'register' %}">＋ <span>Create account</span></a>
+      {% endif %}
+    </nav>
+  </aside>
+<main class="app-shell">
+  <section class="feed-layout"><div class="feed-main"><div class="feed-tabs glass"><b>For you</b><a href="{% url 'reels' %}">Reels</a></div><div id="feedList">{% include 'posts/_post_cards.html' %}</div><div id="feedLoader" class="skeleton-stack"><div class="skeleton"></div><div class="skeleton"></div></div></div><aside class="side-panel"><div class="card glass"><span class="eyebrow">CREATOR STUDIO</span><h3>Your content, measured.</h3><p class="muted">Track views, likes, comments, shares and saves for every post and reel.</p><a class="primary full" href="{% url 'analytics' %}">Open dashboard</a></div><div class="card"><h3>Explore</h3><a class="quick friends-home-link" href="{% url 'friends' %}"><span class="friends-entry-icon">✦</span><span><b>Make friends</b><small>Discover people and profiles</small></span><strong>→</strong></a><a class="quick" href="{% url 'reels' %}">◉ Reels feed</a><a class="quick" href="{% url 'search' %}">⌕ Search creators</a><a class="quick" href="{% url 'inbox' %}">💬 Friends & Messages</a></div></aside></section></main>
+{% if user.is_authenticated %}<nav class="mobile-nav glass"><a class="active" href="{% url 'home' %}">⌂<span>Home</span></a><a href="{% url 'friends' %}">✦<span>Friends</span></a><a class="create-fab" href="{% url 'create_post' %}">＋</a><a href="{% url 'reels' %}">◉<span>Reels</span></a><a href="{% url 'profile' user.username %}">●<span>Profile</span></a></nav>{% endif %}<div id="modalRoot"></div><script>window.HELOGRAM={feedPage:1};</script><script src="{% static 'js/app.js' %}?v=7"></script></body></html>

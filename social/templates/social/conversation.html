@@ -1,1 +1,163 @@
-{% load static %}<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chat · Nexxora</title><link rel="stylesheet" href="{% static 'css/style.css' %}"><link rel="stylesheet" href="{% static 'css/chat.css' %}"></head><body><main class="app-shell chat-page"><div class="chat-header"><a class="chat-back" href="{% url 'inbox' %}">‹</a><div class="chat-user"><span class="avatar small">{{ other.username|first|upper }}</span><div><b>@{{ other.username }}</b><small>Direct message</small></div></div></div><section class="chat-window card"><div class="chat-messages">{% for m in messages %}<article class="message-bubble {% if m.sender == user %}mine{% else %}theirs{% endif %}"><b>{% if m.sender == user %}You{% else %}@{{ m.sender.username }}{% endif %}</b>{% if m.text %}<p>{{ m.text|linebreaksbr }}</p>{% endif %}{% if m.image %}<img src="{{ m.image.url }}" alt="Image sent by @{{ m.sender.username }}" loading="lazy">{% endif %}<small>{{ m.created_at|date:'M d, h:i A' }}</small></article>{% empty %}<div class="chat-empty"><span>✦</span><p>Start the conversation</p><small>Send a message or photo.</small></div>{% endfor %}</div><form method="post" enctype="multipart/form-data" class="chat-composer" id="chat-form">{% csrf_token %}<label class="attach-button" for="chat-image" aria-label="Attach image">＋<input id="chat-image" type="file" name="image" accept="image/*"></label><div class="chat-input-wrap"><textarea name="text" rows="1" placeholder="Message @{{ other.username }}" maxlength="2000"></textarea><small id="image-name"></small></div><button class="primary send-button" type="submit">Send</button></form></section></main><script>const chatImage=document.getElementById('chat-image'),imageName=document.getElementById('image-name');chatImage.addEventListener('change',()=>{imageName.textContent=chatImage.files[0]?chatImage.files[0].name:''});document.getElementById('chat-form').addEventListener('submit',event=>{const text=event.target.querySelector('textarea').value.trim();if(!text&&!chatImage.files.length){event.preventDefault();imageName.textContent='Add a message or image';}});</script></body></html>
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Chat · Helogram</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/chat.css' %}?v=9">
+  <link rel="stylesheet" href="{% static 'css/shared-reel.css' %}?v=3">
+</head>
+<body>
+  <main class="app-shell chat-page">
+    <header class="chat-header">
+      <a class="chat-back" href="{% url 'inbox' %}" aria-label="Back to messages">&#8249;</a>
+      <div class="chat-user">
+        <span class="avatar small">{{ other.username|first|upper }}</span>
+        <div><b>@{{ other.username }}</b><small>Direct message</small></div>
+      </div>
+      <div class="chat-call-actions" aria-label="Call actions">
+        <button type="button" class="call-button" id="voice-call-button" aria-label="Start voice call" title="Voice call">&#9742;</button>
+        <button type="button" class="call-button" id="video-call-button" aria-label="Start video call" title="Video call">&#9632;</button>
+      </div>
+    </header>
+
+    <section class="chat-window card">
+      <div class="chat-messages">
+        {% for m in messages %}
+          <article class="message-bubble {% if m.sender == user %}mine{% else %}theirs{% endif %}{% if m.one_time and m.sender != user %} one-time-receiver{% endif %}">
+            <b>{% if m.sender == user %}You{% else %}@{{ m.sender.username }}{% endif %}</b>
+            {% if m.one_time %}
+              <span class="one-time-badge">&#128274; View once</span>
+              {% if m.sender != user %}<button type="button" class="open-once" data-url="{% url 'open_one_time_message' m.id %}">Open once</button>{% endif %}
+            {% endif %}
+            {% if m.reel %}<a class="shared-reel-card" href="{% url 'reels' %}#{{ m.reel.id }}"><strong class="shared-reel-creator">@{{ m.reel.author.username }}</strong><span class="shared-reel-cover">{% if m.reel.thumbnail %}<img src="{{ m.reel.thumbnail.url }}" alt="Reel by @{{ m.reel.author.username }}">{% else %}<span>&#9654;</span>{% endif %}</span><span class="shared-reel-label">Reel <small>Tap to open</small></span></a>{% endif %}
+            {% if m.text %}<p>{{ m.text|linebreaksbr }}</p>{% endif %}
+            {% if m.image %}<img src="{{ m.image.url }}" alt="Image sent by @{{ m.sender.username }}" loading="lazy">{% endif %}
+            {% if m.audio %}<div class="voice-message" data-audio="{{ m.audio.url }}"><button type="button" class="voice-play" aria-label="Play voice message">&#9654;</button><div class="voice-track"><input class="voice-progress" type="range" min="0" max="100" value="0" aria-label="Voice message progress"><span class="voice-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div><span class="voice-time">0:00</span></div>{% endif %}
+            <small>{{ m.created_at|date:'M d, h:i A' }}</small>
+          </article>
+        {% empty %}
+          <div class="chat-empty"><span>&#10022;</span><p>Start the conversation</p><small>Send a message, photo, or voice note.</small></div>
+        {% endfor %}
+      </div>
+
+      <form method="post" enctype="multipart/form-data" class="chat-composer" id="chat-form">
+        {% csrf_token %}
+        <div class="chat-input-wrap">
+          <textarea name="text" rows="1" placeholder="Message @{{ other.username }}" maxlength="2000"></textarea>
+          <small id="image-name"></small>
+        </div>
+        <label class="attach-button" for="chat-image" aria-label="Attach image">&#43;<input id="chat-image" type="file" name="image" accept="image/*"></label>
+        <button type="button" class="voice-button" id="voice-button" aria-label="Record voice message" title="Record voice message">&#127908;</button>
+        <input id="chat-audio" type="file" name="audio" accept="audio/webm,audio/ogg,audio/mp4" hidden>
+        <label class="one-time-toggle"><input type="checkbox" name="one_time"> View once</label>
+        <button class="primary send-button" type="submit">Send</button>
+      </form>
+      <div class="call-status" id="call-status" role="status" aria-live="polite" hidden></div>
+    </section>
+  </main>
+
+  <script>
+    const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const chatForm = document.getElementById('chat-form');
+    const chatImage = document.getElementById('chat-image');
+    const chatAudio = document.getElementById('chat-audio');
+    const voiceButton = document.getElementById('voice-button');
+    const imageName = document.getElementById('image-name');
+    let recorder = null;
+    let audioChunks = [];
+    let audioStream = null;
+    let recordingTimer = null;
+    let recordingSeconds = 0;
+    let previewAudio = null;
+
+    document.querySelectorAll('.open-once').forEach(button => button.addEventListener('click', async () => {
+      button.disabled = true;
+      try {
+        const response = await fetch(button.dataset.url, {method: 'POST', headers: {'X-CSRFToken': csrf, 'X-Requested-With': 'XMLHttpRequest'}});
+        if (!response.ok) throw new Error();
+        button.closest('.message-bubble').classList.add('opened');
+        button.remove();
+      } catch (error) { button.disabled = false; button.textContent = 'Try again'; }
+    }));
+
+    document.querySelectorAll('.voice-message').forEach(card => {
+      const audio = new Audio();
+      audio.preload = 'auto';
+      audio.src = card.dataset.audio;
+      const play = card.querySelector('.voice-play');
+      const progress = card.querySelector('.voice-progress');
+      const time = card.querySelector('.voice-time');
+      const formatTime = value => `${Math.floor(value / 60)}:${String(Math.floor(value % 60)).padStart(2, '0')}`;
+      const sync = () => { if (audio.duration && Number.isFinite(audio.duration)) { progress.value = (audio.currentTime / audio.duration) * 100; time.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`; } };
+      play.addEventListener('click', async () => { if (audio.paused) { try { await audio.play(); play.innerHTML = '&#10074;&#10074;'; } catch (error) { time.textContent = 'Audio unavailable'; } } else { audio.pause(); play.innerHTML = '&#9654;'; } });
+      progress.addEventListener('input', () => { if (audio.duration) audio.currentTime = (progress.value / 100) * audio.duration; });
+      audio.addEventListener('loadedmetadata', () => { time.textContent = `0:00 / ${formatTime(audio.duration)}`; });
+      audio.addEventListener('error', () => { time.textContent = 'Audio unavailable'; play.disabled = true; });
+      audio.addEventListener('timeupdate', sync);
+      audio.addEventListener('ended', () => { play.innerHTML = '&#9654;'; progress.value = 0; sync(); });
+    });
+
+    chatImage.addEventListener('change', () => { imageName.textContent = chatImage.files[0] ? chatImage.files[0].name : ''; });
+    voiceButton.addEventListener('click', async () => {
+      if (recorder?.state === 'recording') { recorder.stop(); clearInterval(recordingTimer); return; }
+      if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+        imageName.textContent = 'Voice recording is not supported in this browser';
+        return;
+      }
+      try {
+        audioStream = await navigator.mediaDevices.getUserMedia({audio: true});
+        const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm';
+        recorder = new MediaRecorder(audioStream, {mimeType});
+        audioChunks = [];
+        recorder.ondataavailable = event => { if (event.data.size) audioChunks.push(event.data); };
+        recorder.onstop = () => {
+          const blob = new Blob(audioChunks, {type: mimeType});
+          const file = new File([blob], 'voice-message.webm', {type: 'audio/webm'});
+          const transfer = new DataTransfer();
+          transfer.items.add(file);
+          chatAudio.files = transfer.files;
+          audioStream?.getTracks().forEach(track => track.stop());
+          voiceButton.classList.remove('recording');
+          previewAudio = new Audio(URL.createObjectURL(blob));
+          previewAudio.preload = 'auto';
+          previewAudio.controls = true;
+          imageName.innerHTML = `Voice note ready <button type="button" class="preview-toggle" id="preview-toggle">&#9654; Play preview</button>`;
+          document.getElementById('preview-toggle').onclick = () => { if (previewAudio.paused) { previewAudio.play(); document.getElementById('preview-toggle').innerHTML = '&#10074;&#10074; Pause preview'; } else { previewAudio.pause(); document.getElementById('preview-toggle').innerHTML = '&#9654; Play preview'; } };
+        };
+        recorder.start();
+        recordingSeconds = 0;
+        recordingTimer = setInterval(() => { recordingSeconds += 1; imageName.textContent = `Recording ${Math.floor(recordingSeconds / 60)}:${String(recordingSeconds % 60).padStart(2, '0')}… tap again to stop`; }, 1000);
+        voiceButton.classList.add('recording');
+        imageName.textContent = 'Recording 0:00… tap again to stop';
+      } catch (error) { imageName.textContent = 'Microphone permission is required'; }
+    });
+
+    chatForm.addEventListener('submit', event => {
+      const text = chatForm.querySelector('textarea').value.trim();
+      if (!text && !chatImage.files.length && !chatAudio.files.length) {
+        event.preventDefault();
+        imageName.textContent = 'Add text, an image, or a voice note';
+      }
+    });
+
+    const callStatus = document.getElementById('call-status');
+    const username = '{{ other.username|escapejs }}';
+    let peer, activeCall, incomingCall, localStream, remoteAudio;
+    const addedCandidates = new Set();
+    const callApi = (body) => fetch(`/social/messages/call/${encodeURIComponent(username)}/`, {method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':csrf}, body:JSON.stringify(body)}).then(r=>r.json());
+    const showCall = text => { callStatus.hidden = false; callStatus.textContent = text; };
+    const setupPeer = (video) => { peer = new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]}); peer.onicecandidate = e => e.candidate && activeCall && callApi({action:'candidate',call_id:activeCall,candidate:e.candidate.toJSON()}); peer.ontrack = e => { remoteAudio ||= document.createElement('audio'); remoteAudio.autoplay=true; remoteAudio.srcObject=e.streams[0]; document.body.appendChild(remoteAudio); }; return peer; };
+    const startCall = async (video) => {
+      if (!window.RTCPeerConnection || !navigator.mediaDevices?.getUserMedia) { showCall('Calling is not supported in this browser.'); return; }
+      try { localStream=await navigator.mediaDevices.getUserMedia({audio:true,video}); const pc=setupPeer(video); localStream.getTracks().forEach(track=>pc.addTrack(track,localStream)); if(incomingCall){ activeCall=incomingCall.id; await pc.setRemoteDescription(incomingCall.offer); const answer=await pc.createAnswer(); await pc.setLocalDescription(answer); await callApi({action:'answer',call_id:activeCall,answer:pc.localDescription}); incomingCall=null; showCall('Call connected'); } else { const offer=await pc.createOffer(); await pc.setLocalDescription(offer); const result=await callApi({action:'start',kind:video?'video':'voice',offer:pc.localDescription}); activeCall=result.call_id; showCall(`${video?'Video':'Voice'} call ringing…`); } } catch (error) { showCall('Microphone/camera permission is required.'); }
+    };
+    const pollCalls = async () => { try { const data=await fetch(`/social/messages/call/${encodeURIComponent(username)}/`).then(r=>r.json()); const call=data.calls?.[0]; if(!call || call.status==='ended') return; if(!activeCall && call.caller !== {{ user.id }}) { incomingCall=call; showCall(`${call.kind} call incoming. Press the matching call button to answer.`); } if(activeCall===call.id && call.answer && peer?.signalingState==='have-local-offer') { await peer.setRemoteDescription(call.answer); showCall('Call connected'); } if(activeCall===call.id && peer?.remoteDescription) { const candidates={{ user.id }}===call.caller ? call.recipient_candidates : call.caller_candidates; for(const candidate of candidates || []) { const key=JSON.stringify(candidate); if(!addedCandidates.has(key)){ await peer.addIceCandidate(candidate); addedCandidates.add(key); } } } } catch (error) {} };
+    setInterval(pollCalls, 2000);
+    document.getElementById('voice-call-button').addEventListener('click', () => startCall(false));
+    document.getElementById('video-call-button').addEventListener('click', () => startCall(true));
+  </script>
+</body>
+</html>
