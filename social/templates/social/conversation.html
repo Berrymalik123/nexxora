@@ -95,7 +95,7 @@
       play.addEventListener('click', async () => { if (audio.paused) { try { await audio.play(); play.innerHTML = '&#10074;&#10074;'; } catch (error) { time.textContent = 'Audio unavailable'; } } else { audio.pause(); play.innerHTML = '&#9654;'; } });
       progress.addEventListener('input', () => { if (audio.duration) audio.currentTime = (progress.value / 100) * audio.duration; });
       audio.addEventListener('loadedmetadata', () => { time.textContent = `0:00 / ${formatTime(audio.duration)}`; });
-      audio.addEventListener('error', () => { time.textContent = 'Audio unavailable'; play.disabled = true; });
+      audio.addEventListener('error', () => { time.innerHTML = `<a href="${card.dataset.audio}" download>Download audio</a>`; play.disabled = true; });
       audio.addEventListener('timeupdate', sync);
       audio.addEventListener('ended', () => { play.innerHTML = '&#9654;'; progress.value = 0; sync(); });
     });
